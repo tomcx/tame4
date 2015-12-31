@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Example for an Array of Structures With TAME</title>
+        <link rel="stylesheet" href="css/demo.css" type="text/css" media="screen" charset="utf-8" />	
+        <script src="../resources/tame.js" type="text/javascript"></script>
+        <script src="../resources/webservice.js" type="text/javascript"></script>
+        <script src="js/demo.js" type="text/javascript"></script>
+    </head>
+    
+    <body>
+        <div id="wrapper"><!-- begin wrapper -->
+        
+            <h1>Example for an Array of Structures With TAME</h1>
+            <h2>If an array index (0-4) is specified in the "Send only"-field, 
+                only this single item will be sent to the PLC.<br />
+                There are issues with converting REAL variables.
+                See chapter 9.1 of the documentation.
+            </h2>
+            
+            
+            <div class="array_elem leftmargin">
+                <span class="inputlabel">STRING</span><br />
+                <input type="text" id="input10" class="inputfield" maxlength="5" />
+                <span id="show10" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">REAL</span><br />
+                <input type="text" id="input20" class="inputfield" maxlength="6" />
+                <span id="show20" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">SINT</span><br />
+                <input type="text" id="input30" class="inputfield" maxlength="6" />
+                <span id="show30" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">INT</span><br />
+                <input type="text" id="input40" class="inputfield" maxlength="6" />
+                <span id="show40" class="recfield">No Data</span><br /><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 1</span><br />
+                <input type="text" id="input500" class="inputfield" maxlength="6" />
+                <span id="show500" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 2</span><br />
+                <input type="text" id="input501" class="inputfield" maxlength="6" />
+                <span id="show501" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 3</span><br />
+                <input type="text" id="input502" class="inputfield" maxlength="6" />
+                <span id="show502" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 4</span><br />
+                <input type="text" id="input503" class="inputfield" maxlength="6" />
+                <span id="show503" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 5</span><br />
+                <input type="text" id="input504" class="inputfield" maxlength="6" />
+                <span id="show504" class="recfield">No Data</span><br /><br />
+            </div>
+            
+            <div class="array_elem">
+                <span class="inputlabel">STRING</span><br />
+                <input type="text" id="input11" class="inputfield" maxlength="5" />
+                <span id="show11" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">REAL</span><br />
+                <input type="text" id="input21" class="inputfield" maxlength="6" />
+                <span id="show21" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">SINT</span><br />
+                <input type="text" id="input31" class="inputfield" maxlength="6" />
+                <span id="show31" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">INT</span><br />
+                <input type="text" id="input41" class="inputfield" maxlength="6" />
+                <span id="show41" class="recfield">No Data</span><br /><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 1</span><br />
+                <input type="text" id="input510" class="inputfield" maxlength="6" />
+                <span id="show510" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 2</span><br />
+                <input type="text" id="input511" class="inputfield" maxlength="6" />
+                <span id="show511" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 3</span><br />
+                <input type="text" id="input512" class="inputfield" maxlength="6" />
+                <span id="show512" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 4</span><br />
+                <input type="text" id="input513" class="inputfield" maxlength="6" />
+                <span id="show513" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 5</span><br />
+                <input type="text" id="input514" class="inputfield" maxlength="6" />
+                <span id="show514" class="recfield">No Data</span><br /><br />
+            </div>
+            
+            <div class="array_elem">
+                <span class="inputlabel">STRING</span><br />
+                <input type="text" id="input12" class="inputfield" maxlength="5" />
+                <span id="show12" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">REAL</span><br />
+                <input type="text" id="input22" class="inputfield" maxlength="6" />
+                <span id="show22" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">SINT</span><br />
+                <input type="text" id="input32" class="inputfield" maxlength="6" />
+                <span id="show32" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">INT</span><br />
+                <input type="text" id="input42" class="inputfield" maxlength="6" />
+                <span id="show42" class="recfield">No Data</span><br /><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 1</span><br />
+                <input type="text" id="input520" class="inputfield" maxlength="6" />
+                <span id="show520" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 2</span><br />
+                <input type="text" id="input521" class="inputfield" maxlength="6" />
+                <span id="show521" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 3</span><br />
+                <input type="text" id="input522" class="inputfield" maxlength="6" />
+                <span id="show522" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 4</span><br />
+                <input type="text" id="input523" class="inputfield" maxlength="6" />
+                <span id="show523" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 5</span><br />
+                <input type="text" id="input524" class="inputfield" maxlength="6" />
+                <span id="show524" class="recfield">No Data</span><br /><br />
+            </div>
+            
+            <div class="array_elem">
+                <span class="inputlabel">STRING</span><br />
+                <input type="text" id="input13" class="inputfield" maxlength="5" />
+                <span id="show13" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">REAL</span><br />
+                <input type="text" id="input23" class="inputfield" maxlength="6" />
+                <span id="show23" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">SINT</span><br />
+                <input type="text" id="input33" class="inputfield" maxlength="6" />
+                <span id="show33" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">INT</span><br />
+                <input type="text" id="input43" class="inputfield" maxlength="6" />
+                <span id="show43" class="recfield">No Data</span><br /><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 1</span><br />
+                <input type="text" id="input530" class="inputfield" maxlength="6" />
+                <span id="show530" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 2</span><br />
+                <input type="text" id="input531" class="inputfield" maxlength="6" />
+                <span id="show531" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 3</span><br />
+                <input type="text" id="input532" class="inputfield" maxlength="6" />
+                <span id="show532" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 4</span><br />
+                <input type="text" id="input533" class="inputfield" maxlength="6" />
+                <span id="show533" class="recfield">No Data</span><br /><br />
+                <span class="inputlabel">ARRAY OF BYTE 5</span><br />
+                <input type="text" id="input534" class="inputfield" maxlength="6" />
+                <span id="show534" class="recfield">No Data</span><br /><br />
+            </div>
+            
+            <div class="clear"></div>
+            
+            <div class="leftmargin">
+                <span class="inputlabel">Send only:</span><br />
+                <input type="text" id="idx" maxlength="1" /><br /><br />
+                <button class="sendbutt" id="button1">Send</button><br /><br /><br />
+            </div>
+        </div><!-- end wrapper -->
+     
+    </body>
+</html>
