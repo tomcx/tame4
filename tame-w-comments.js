@@ -4165,7 +4165,7 @@ TAME.WebServiceClient = function (service) {
         //Generate the ADS request object and call the send function.
         var adsReq = {
             method: 'Read',
-            sync: true,
+            //sync: true,
             indexGroup: indexGroups.UploadInfo,
             indexOffset: 0,
             reqDescr: {
@@ -4199,7 +4199,7 @@ TAME.WebServiceClient = function (service) {
         
         adsReq2 = {
             method: 'Read',
-            sync: true,
+            //sync: true,
             indexGroup: indexGroups.Upload,
             indexOffset: 0,
             reqDescr: {
@@ -4321,6 +4321,8 @@ TAME.WebServiceClient = function (service) {
              
             log('TAME library info: End of fetching the symbols.');
             log('TAME library info: Symbol table ready.');
+            
+            service.onReady();
               
         } catch (e) {
             log('TAME library error: Parsing of uploaded symbol information failed:' + e);
@@ -4340,258 +4342,119 @@ TAME.WebServiceClient = function (service) {
         configFile, name, allSymbols, typeArr, arrayLength, type, elem,
         tcVersion;
         
-        //Synchronous HTTPRequest
-        xmlHttpReq.open('GET', service.configFileUrl, false);
-        xmlHttpReq.setRequestHeader('Content-Type', 'text/xml');
-        xmlHttpReq.send(null);
-
         log('TAME library info: Start reading the TPY file.');
         
-        
-        //Create a DOM object from XML
-        if (typeof DOMParser == 'function') {
-            try {
-                configFile = (new DOMParser()).parseFromString(xmlHttpReq.responseText, "text/xml");
-            } catch (e) {
-                log('TAME library error: Creating a DOM object from TPY failed:' + e);
-                return;
-            }
-        } else {
-            log('TAME library error: Can\'t parse the symbol file cause your brower does not provide a DOMParser function.');
-        }
- 
-        
-        //Get the information about the PLC and the routing
-        if (typeof service.amsNetId !== 'string' || typeof service.amsPort !== 'string' || alignment === 0) {
-            log('TAME library info: Start reading the service information from the TPY file.');
-            try {
-                serviceInfo = {
-                    netId: configFile.getElementsByTagName('NetId')[0].childNodes[0].nodeValue,
-                    port: configFile.getElementsByTagName('Port')[0].childNodes[0].nodeValue
-                };
-                 
-                tcVersion = configFile.getElementsByTagName('TwinCATVersion')[0].childNodes[0].nodeValue.charAt(0);
+        //Synchronous HTTPRequest
+        xmlHttpReq.open('GET', service.configFileUrl, true);
+        xmlHttpReq.setRequestHeader('Content-Type', 'text/xml');
 
-                if (tcVersion === '2') {
-                    serviceInfo.alignment = parseInt(configFile.getElementsByTagName('PackSize')[0].childNodes[0].nodeValue, 10);
-                } else if (tcVersion === '3') {
-                    serviceInfo.alignment = 8;
+        xmlHttpReq.onreadystatechange = function() {
+            
+            if ((xmlHttpReq.readyState === 4) && (xmlHttpReq.status === 200)) {
+                
+                //Create a DOM object from XML
+                if (typeof DOMParser == 'function') {
+                    try {
+                        configFile = (new DOMParser()).parseFromString(xmlHttpReq.responseText, "text/xml");
+                    } catch (e) {
+                        log('TAME library error: Creating a DOM object from TPY failed:' + e);
+                        return;
+                    }
                 } else {
-                    log('TAME library error: Could not determine the TwinCAT version.');
+                    log('TAME library error: Can\'t parse the symbol file cause your brower does not provide a DOMParser function.');
                 }
-                log('TAME library info: End of reading the service information from the TPY file.');
-            } catch(e) {
-                log('TAME library error: An error occured while reading service information from the TPY file:');
-                log(e);
-            }
-        } else {
-            log('TAME library info: NetId, port and alignment manually set. Skip reading the service information from the TPY file.');
-        }
-        
-
-        //Create the symbol table
-        if (service.forceUploadUsage !== true) {
-            log('TAME library info: Start reading the symbols from the TPY file.');
-            try {           
-                //Create an Array of the Elements with "Symbol" as tag name.
-                allSymbols = configFile.getElementsByTagName('Symbols')[0];
-                symbolArray = allSymbols.getElementsByTagName('Symbol');
+         
                 
-                //Get the name of the symbol and create an object property with it.
-                //symTable is declared outside in the constructor function.
-                for (var i = 0; i < symbolArray.length; i++) {
-                    name = symbolArray[i].getElementsByTagName('Name')[0].childNodes[0].nodeValue.toUpperCase();
-                    symTable[name] = {
-                        typeString: symbolArray[i].getElementsByTagName('Type')[0].childNodes[0].nodeValue.toUpperCase(),
-                        indexGroup: parseInt(symbolArray[i].getElementsByTagName('IGroup')[0].childNodes[0].nodeValue, 10),
-                        indexOffset: parseInt(symbolArray[i].getElementsByTagName('IOffset')[0].childNodes[0].nodeValue, 10),
-                        bitSize: parseInt(symbolArray[i].getElementsByTagName('BitSize')[0].childNodes[0].nodeValue, 10)
-                    };
-                    symTable[name].size = (symTable[name].bitSize >= 8) ? symTable[name].bitSize/8 : symTable[name].bitSize;
-                
-                
-                     //Set additional information.
-                    typeArr = symTable[name].typeString.split(" ");
-                    
-                    if (typeArr[0] === 'ARRAY') {
-                        
-                        //Type
-                        symTable[name].type = typeArr[0];
-                        
-                        //Array length
-                        arrayLength = typeArr[1].substring(1, typeArr[1].length - 1);
-                        arrayLength = arrayLength.split('..');
-                        symTable[name].arrStartIdx = parseInt(arrayLength[0], 10);
-                        arrayLength = parseInt(arrayLength[1], 10) - parseInt(arrayLength[0], 10) + 1;
-                        symTable[name].arrayLength = arrayLength;
-                        
-                        
-                        
-                        //Data type of the array.
-                        type = typeArr[3].split('(');                    
-                        if (type[1] !== undefined) {
-                            type[1] = type[1].substr(0, type[1].length - 1);
-                            symTable[name].fullType = typeArr[0] + '.' + arrayLength + '.' + type[0] + '.' + type[1];
-                            symTable[name].stringLength = parseInt(type[1], 10);
-                        } else {
-                            symTable[name].fullType = typeArr[0] + '.' + arrayLength + '.' + type[0];
-                        }
-                        
-                        //Item length
-                        symTable[name].itemSize = symTable[name].size / arrayLength;
-                        
-                        //Check if variable is a user defined data type,
-                        symTable[name].arrayDataType = 'USER';
-                        for (elem in plcTypeLen) {
-                            if (plcTypeLen.hasOwnProperty(elem)) {
-                                if (type[0] === elem) {
-                                    symTable[name].arrayDataType = type[0];
-                                }
-                            }
-                        }
-                        if (symTable[name].arrayDataType === 'USER') {
-                            symTable[name].dataType = type[0];
-                        }
-    
-                    } else {
-                        type = typeArr[0].split('(');
-                        
-                        if (type[1] !== undefined) {
-                            //String
-                            type[1] = type[1].substr(0, type[1].length - 1);
-                            symTable[name].fullType = type[0] + '.' + type[1];
-                            symTable[name].stringLength = parseInt(type[1], 10);
-                        } else {
-                            symTable[name].fullType = type[0];
-                        }
-                        
-                        //Check if variable is a user defined data type,
-                        symTable[name].type = 'USER';
-                        for (elem in plcTypeLen) {
-                            if (plcTypeLen.hasOwnProperty(elem)) {
-                                if (type[0] === elem) {
-                                    symTable[name].type = type[0];
-                                }
-                            }
-                        }
-                        if (symTable[name].type === 'USER') {
-                            symTable[name].dataType = type[0];
-                        }
-                    }
-                }
-                
-                instance.symTableReady = true;
-                
-                log('TAME library info: End of reading the symbols from the TPY file.');
-                log('TAME library info: Symbol table ready.');
-                    
-            } catch(e) {
-                log('TAME library error: An error occured while parsing the symbol file:');
-                log(e);
-            }
-        } else {
-            log('TAME library info: Reading the symbols from the TPY file is deactivated.');
-        }
-        
-        
-        //Get the data types.
-        var allDataTypes, dataTypeArray, subItemArray, sName , fullName;
-        
-        if (true) {
-            log('TAME library info: Start reading the data types from the TPY file.');
-            try {            
-                //Create an Array of the Elements with "DataType" as tag name.
-                allDataTypes = configFile.getElementsByTagName('DataTypes')[0];
-                dataTypeArray = allDataTypes.getElementsByTagName('DataType');
-                
-                //Get the name of the data type and create an object property with it.
-                //dataTypeTable is declared outside in the constructor function.
-                //Arrays first
-                for (var i = 0; i < dataTypeArray.length; i++) {
-                    fullName = dataTypeArray[i].getElementsByTagName('Name')[0].childNodes[0].nodeValue.toUpperCase();
-                    name = fullName.split(" ")[0];
-                    if (name === 'ARRAY') {
-                        
-                        dataTypeTable[fullName] = {
-                            //type: dataTypeArray[i].getElementsByTagName('Type')[0].childNodes[0].nodeValue.toUpperCase(),
-                            bitSize: parseInt(dataTypeArray[i].getElementsByTagName('BitSize')[0].childNodes[0].nodeValue, 10)
+                //Get the information about the PLC and the routing
+                if (typeof service.amsNetId !== 'string' || typeof service.amsPort !== 'string' || alignment === 0) {
+                    log('TAME library info: Start reading the service information from the TPY file.');
+                    try {
+                        serviceInfo = {
+                            netId: configFile.getElementsByTagName('NetId')[0].childNodes[0].nodeValue,
+                            port: configFile.getElementsByTagName('Port')[0].childNodes[0].nodeValue
                         };
-                        dataTypeTable[fullName].size = dataTypeTable[fullName].bitSize / 8;
+                         
+                        tcVersion = configFile.getElementsByTagName('TwinCATVersion')[0].childNodes[0].nodeValue.charAt(0);
+        
+                        if (tcVersion === '2') {
+                            serviceInfo.alignment = parseInt(configFile.getElementsByTagName('PackSize')[0].childNodes[0].nodeValue, 10);
+                        } else if (tcVersion === '3') {
+                            serviceInfo.alignment = 8;
+                        } else {
+                            log('TAME library error: Could not determine the TwinCAT version.');
+                        }
+                        log('TAME library info: End of reading the service information from the TPY file.');
+                    } catch(e) {
+                        log('TAME library error: An error occured while reading service information from the TPY file:');
+                        log(e);
                     }
+                } else {
+                    log('TAME library info: NetId, port and alignment manually set. Skip reading the service information from the TPY file.');
                 }
-                //Then the rest
-                for (var i = 0; i < dataTypeArray.length; i++) {
-                    fullName = dataTypeArray[i].getElementsByTagName('Name')[0].childNodes[0].nodeValue.toUpperCase();
-                    name = fullName.split(" ")[0];
-                    if (name !== 'ARRAY') {
+                
+        
+                //Create the symbol table
+                if (service.forceUploadUsage !== true) {
+                    log('TAME library info: Start reading the symbols from the TPY file.');
+                    try {           
+                        //Create an Array of the Elements with "Symbol" as tag name.
+                        allSymbols = configFile.getElementsByTagName('Symbols')[0];
+                        symbolArray = allSymbols.getElementsByTagName('Symbol');
                         
-                        dataTypeTable[name] = {
-                            //type: dataTypeArray[i].getElementsByTagName('Type')[0].childNodes[0].nodeValue.toUpperCase(),
-                            bitSize: parseInt(dataTypeArray[i].getElementsByTagName('BitSize')[0].childNodes[0].nodeValue, 10),
-                            subItems: {}
-                        };
-                        dataTypeTable[name].size = dataTypeTable[name].bitSize / 8;
-                        //Get the SubItems
-                        subItemArray = dataTypeArray[i].getElementsByTagName('SubItem');
-
-                        for (var j = 0; j < subItemArray.length; j++) {
-                            sName = subItemArray[j].getElementsByTagName('Name')[0].childNodes[0].nodeValue.toUpperCase();
-                            dataTypeTable[name].subItems[sName] = {
-                                typeString: subItemArray[j].getElementsByTagName('Type')[0].childNodes[0].nodeValue.toUpperCase(),
-                                pointer: subItemArray[j].getElementsByTagName('Type')[0].hasAttribute('Pointer'),
-                                bitSize: parseInt(subItemArray[j].getElementsByTagName('BitSize')[0].childNodes[0].nodeValue, 10),
+                        //Get the name of the symbol and create an object property with it.
+                        //symTable is declared outside in the constructor function.
+                        for (var i = 0; i < symbolArray.length; i++) {
+                            name = symbolArray[i].getElementsByTagName('Name')[0].childNodes[0].nodeValue.toUpperCase();
+                            symTable[name] = {
+                                typeString: symbolArray[i].getElementsByTagName('Type')[0].childNodes[0].nodeValue.toUpperCase(),
+                                indexGroup: parseInt(symbolArray[i].getElementsByTagName('IGroup')[0].childNodes[0].nodeValue, 10),
+                                indexOffset: parseInt(symbolArray[i].getElementsByTagName('IOffset')[0].childNodes[0].nodeValue, 10),
+                                bitSize: parseInt(symbolArray[i].getElementsByTagName('BitSize')[0].childNodes[0].nodeValue, 10)
                             };
-                            if (subItemArray[j].getElementsByTagName('BitOffs')[0] !== undefined) {
-                                dataTypeTable[name].subItems[sName].bitOffset = parseInt(subItemArray[j].getElementsByTagName('BitOffs')[0].childNodes[0].nodeValue, 10);
-                            }
+                            symTable[name].size = (symTable[name].bitSize >= 8) ? symTable[name].bitSize/8 : symTable[name].bitSize;
+                        
+                        
+                             //Set additional information.
+                            typeArr = symTable[name].typeString.split(" ");
                             
-                                
-                            dataTypeTable[name].subItems[sName].size = (dataTypeTable[name].subItems[sName].bitSize >= 8) ? dataTypeTable[name].subItems[sName].bitSize/8 : dataTypeTable[name].subItems[sName].bitSize;
-                
-                            //Set additional information
-                            typeArr = dataTypeTable[name].subItems[sName].typeString.split(" ");
-                    
                             if (typeArr[0] === 'ARRAY') {
                                 
                                 //Type
-                                dataTypeTable[name].subItems[sName].type = typeArr[0];
+                                symTable[name].type = typeArr[0];
                                 
-                                //Array Length
+                                //Array length
                                 arrayLength = typeArr[1].substring(1, typeArr[1].length - 1);
                                 arrayLength = arrayLength.split('..');
-                                dataTypeTable[name].subItems[sName].arrStartIdx = parseInt(arrayLength[0], 10);
+                                symTable[name].arrStartIdx = parseInt(arrayLength[0], 10);
                                 arrayLength = parseInt(arrayLength[1], 10) - parseInt(arrayLength[0], 10) + 1;
-                                dataTypeTable[name].subItems[sName].arrayLength = arrayLength;
+                                symTable[name].arrayLength = arrayLength;
+                                
                                 
                                 
                                 //Data type of the array.
                                 type = typeArr[3].split('(');                    
                                 if (type[1] !== undefined) {
                                     type[1] = type[1].substr(0, type[1].length - 1);
-                                    dataTypeTable[name].subItems[sName].fullType = typeArr[0] + '.' + arrayLength + '.' + type[0] + '.' + type[1];
-                                    dataTypeTable[name].subItems[sName].stringLength = parseInt(type[1], 10);
+                                    symTable[name].fullType = typeArr[0] + '.' + arrayLength + '.' + type[0] + '.' + type[1];
+                                    symTable[name].stringLength = parseInt(type[1], 10);
                                 } else {
-                                    dataTypeTable[name].subItems[sName].fullType = typeArr[0] + '.' + arrayLength + '.' + type[0];
+                                    symTable[name].fullType = typeArr[0] + '.' + arrayLength + '.' + type[0];
                                 }
                                 
-                                dataTypeTable[name].subItems[sName].bitSize = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].bitSize;
-                                dataTypeTable[name].subItems[sName].size = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].size;
-                                
-                                
                                 //Item length
-                                dataTypeTable[name].subItems[sName].itemSize = dataTypeTable[name].subItems[sName].size / arrayLength;
+                                symTable[name].itemSize = symTable[name].size / arrayLength;
                                 
                                 //Check if variable is a user defined data type,
-                                dataTypeTable[name].subItems[sName].arrayDataType = 'USER';
+                                symTable[name].arrayDataType = 'USER';
                                 for (elem in plcTypeLen) {
                                     if (plcTypeLen.hasOwnProperty(elem)) {
                                         if (type[0] === elem) {
-                                            dataTypeTable[name].subItems[sName].arrayDataType = type[0];
+                                            symTable[name].arrayDataType = type[0];
                                         }
                                     }
                                 }
-                                if (dataTypeTable[name].subItems[sName].arrayDataType === 'USER') {
-                                    dataTypeTable[name].subItems[sName].dataType = type[0];
+                                if (symTable[name].arrayDataType === 'USER') {
+                                    symTable[name].dataType = type[0];
                                 }
             
                             } else {
@@ -4600,41 +4463,189 @@ TAME.WebServiceClient = function (service) {
                                 if (type[1] !== undefined) {
                                     //String
                                     type[1] = type[1].substr(0, type[1].length - 1);
-                                    dataTypeTable[name].subItems[sName].fullType = type[0] + '.' + type[1];
-                                    dataTypeTable[name].subItems[sName].stringLength = parseInt(type[1], 10);
+                                    symTable[name].fullType = type[0] + '.' + type[1];
+                                    symTable[name].stringLength = parseInt(type[1], 10);
                                 } else {
-                                    dataTypeTable[name].subItems[sName].fullType = type[0];
+                                    symTable[name].fullType = type[0];
                                 }
                                 
                                 //Check if variable is a user defined data type,
-                                dataTypeTable[name].subItems[sName].type = 'USER';
+                                symTable[name].type = 'USER';
                                 for (elem in plcTypeLen) {
                                     if (plcTypeLen.hasOwnProperty(elem)) {
                                         if (type[0] === elem) {
-                                            dataTypeTable[name].subItems[sName].type = type[0];
+                                            symTable[name].type = type[0];
                                         }
                                     }
                                 }
-                                if (dataTypeTable[name].subItems[sName].type === 'USER') {
-                                    dataTypeTable[name].subItems[sName].dataType = type[0];
+                                if (symTable[name].type === 'USER') {
+                                    symTable[name].dataType = type[0];
                                 }
                             }
                         }
+                        
+                        instance.symTableReady = true;
+                        
+                        log('TAME library info: End of reading the symbols from the TPY file.');
+                        log('TAME library info: Symbol table ready.');
+                            
+                    } catch(e) {
+                        log('TAME library error: An error occured while parsing the symbol file:');
+                        log(e);
                     }
-                    
+                } else {
+                    log('TAME library info: Reading the symbols from the TPY file is deactivated.');
                 }
-                instance.dataTypeTableReady = true;       
-
-                log('TAME library info: End of reading the data types from the TPY file.');
-                log('TAME library info: Data type table ready.');
-   
-            } catch(e) {
-                log('TAME library error: An error occured while creating the data type information:');
-                log('Type: ' + fullName);
-                log('SubItem: ' + sName);
-                log(e);
+                
+                
+                //Get the data types.
+                var allDataTypes, dataTypeArray, subItemArray, sName , fullName;
+                
+                if (true) {
+                    log('TAME library info: Start reading the data types from the TPY file.');
+                    try {            
+                        //Create an Array of the Elements with "DataType" as tag name.
+                        allDataTypes = configFile.getElementsByTagName('DataTypes')[0];
+                        dataTypeArray = allDataTypes.getElementsByTagName('DataType');
+                        
+                        //Get the name of the data type and create an object property with it.
+                        //dataTypeTable is declared outside in the constructor function.
+                        //Arrays first
+                        for (var i = 0; i < dataTypeArray.length; i++) {
+                            fullName = dataTypeArray[i].getElementsByTagName('Name')[0].childNodes[0].nodeValue.toUpperCase();
+                            name = fullName.split(" ")[0];
+                            if (name === 'ARRAY') {
+                                
+                                dataTypeTable[fullName] = {
+                                    //type: dataTypeArray[i].getElementsByTagName('Type')[0].childNodes[0].nodeValue.toUpperCase(),
+                                    bitSize: parseInt(dataTypeArray[i].getElementsByTagName('BitSize')[0].childNodes[0].nodeValue, 10)
+                                };
+                                dataTypeTable[fullName].size = dataTypeTable[fullName].bitSize / 8;
+                            }
+                        }
+                        //Then the rest
+                        for (var i = 0; i < dataTypeArray.length; i++) {
+                            fullName = dataTypeArray[i].getElementsByTagName('Name')[0].childNodes[0].nodeValue.toUpperCase();
+                            name = fullName.split(" ")[0];
+                            if (name !== 'ARRAY') {
+                                
+                                dataTypeTable[name] = {
+                                    //type: dataTypeArray[i].getElementsByTagName('Type')[0].childNodes[0].nodeValue.toUpperCase(),
+                                    bitSize: parseInt(dataTypeArray[i].getElementsByTagName('BitSize')[0].childNodes[0].nodeValue, 10),
+                                    subItems: {}
+                                };
+                                dataTypeTable[name].size = dataTypeTable[name].bitSize / 8;
+                                //Get the SubItems
+                                subItemArray = dataTypeArray[i].getElementsByTagName('SubItem');
+        
+                                for (var j = 0; j < subItemArray.length; j++) {
+                                    sName = subItemArray[j].getElementsByTagName('Name')[0].childNodes[0].nodeValue.toUpperCase();
+                                    dataTypeTable[name].subItems[sName] = {
+                                        typeString: subItemArray[j].getElementsByTagName('Type')[0].childNodes[0].nodeValue.toUpperCase(),
+                                        pointer: subItemArray[j].getElementsByTagName('Type')[0].hasAttribute('Pointer'),
+                                        bitSize: parseInt(subItemArray[j].getElementsByTagName('BitSize')[0].childNodes[0].nodeValue, 10),
+                                    };
+                                    if (subItemArray[j].getElementsByTagName('BitOffs')[0] !== undefined) {
+                                        dataTypeTable[name].subItems[sName].bitOffset = parseInt(subItemArray[j].getElementsByTagName('BitOffs')[0].childNodes[0].nodeValue, 10);
+                                    }
+                                    
+                                        
+                                    dataTypeTable[name].subItems[sName].size = (dataTypeTable[name].subItems[sName].bitSize >= 8) ? dataTypeTable[name].subItems[sName].bitSize/8 : dataTypeTable[name].subItems[sName].bitSize;
+                        
+                                    //Set additional information
+                                    typeArr = dataTypeTable[name].subItems[sName].typeString.split(" ");
+                            
+                                    if (typeArr[0] === 'ARRAY') {
+                                        
+                                        //Type
+                                        dataTypeTable[name].subItems[sName].type = typeArr[0];
+                                        
+                                        //Array Length
+                                        arrayLength = typeArr[1].substring(1, typeArr[1].length - 1);
+                                        arrayLength = arrayLength.split('..');
+                                        dataTypeTable[name].subItems[sName].arrStartIdx = parseInt(arrayLength[0], 10);
+                                        arrayLength = parseInt(arrayLength[1], 10) - parseInt(arrayLength[0], 10) + 1;
+                                        dataTypeTable[name].subItems[sName].arrayLength = arrayLength;
+                                        
+                                        
+                                        //Data type of the array.
+                                        type = typeArr[3].split('(');                    
+                                        if (type[1] !== undefined) {
+                                            type[1] = type[1].substr(0, type[1].length - 1);
+                                            dataTypeTable[name].subItems[sName].fullType = typeArr[0] + '.' + arrayLength + '.' + type[0] + '.' + type[1];
+                                            dataTypeTable[name].subItems[sName].stringLength = parseInt(type[1], 10);
+                                        } else {
+                                            dataTypeTable[name].subItems[sName].fullType = typeArr[0] + '.' + arrayLength + '.' + type[0];
+                                        }
+                                        
+                                        dataTypeTable[name].subItems[sName].bitSize = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].bitSize;
+                                        dataTypeTable[name].subItems[sName].size = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].size;
+                                        
+                                        
+                                        //Item length
+                                        dataTypeTable[name].subItems[sName].itemSize = dataTypeTable[name].subItems[sName].size / arrayLength;
+                                        
+                                        //Check if variable is a user defined data type,
+                                        dataTypeTable[name].subItems[sName].arrayDataType = 'USER';
+                                        for (elem in plcTypeLen) {
+                                            if (plcTypeLen.hasOwnProperty(elem)) {
+                                                if (type[0] === elem) {
+                                                    dataTypeTable[name].subItems[sName].arrayDataType = type[0];
+                                                }
+                                            }
+                                        }
+                                        if (dataTypeTable[name].subItems[sName].arrayDataType === 'USER') {
+                                            dataTypeTable[name].subItems[sName].dataType = type[0];
+                                        }
+                    
+                                    } else {
+                                        type = typeArr[0].split('(');
+                                        
+                                        if (type[1] !== undefined) {
+                                            //String
+                                            type[1] = type[1].substr(0, type[1].length - 1);
+                                            dataTypeTable[name].subItems[sName].fullType = type[0] + '.' + type[1];
+                                            dataTypeTable[name].subItems[sName].stringLength = parseInt(type[1], 10);
+                                        } else {
+                                            dataTypeTable[name].subItems[sName].fullType = type[0];
+                                        }
+                                        
+                                        //Check if variable is a user defined data type,
+                                        dataTypeTable[name].subItems[sName].type = 'USER';
+                                        for (elem in plcTypeLen) {
+                                            if (plcTypeLen.hasOwnProperty(elem)) {
+                                                if (type[0] === elem) {
+                                                    dataTypeTable[name].subItems[sName].type = type[0];
+                                                }
+                                            }
+                                        }
+                                        if (dataTypeTable[name].subItems[sName].type === 'USER') {
+                                            dataTypeTable[name].subItems[sName].dataType = type[0];
+                                        }
+                                    }
+                                }
+                            }
+                            
+                        }
+                        instance.dataTypeTableReady = true;       
+        
+                        log('TAME library info: End of reading the data types from the TPY file.');
+                        log('TAME library info: Data type table ready.');
+                        
+                        //Get Upload Info
+                        checkGetUploadInfo();
+           
+                    } catch(e) {
+                        log('TAME library error: An error occured while creating the data type information:');
+                        log('Type: ' + fullName);
+                        log('SubItem: ' + sName);
+                        log(e);
+                    }
+                }
             }
-        }
+        };
+        
+        xmlHttpReq.send(null);
         
     };
     
@@ -4670,6 +4681,25 @@ TAME.WebServiceClient = function (service) {
         log('TAME library info: Target information: NetId: ' + service.amsNetId + ', AMS port: ' + service.amsPort + ' , alignment: ' + alignment);
     };
  
+ 
+ 
+    function checkGetUploadInfo() {
+        
+        setServiceParamFromTPY();
+        
+        if (typeof service.configFileUrl != 'string' || service.forceUploadUsage === true) {
+            log('TAME library info: Start fetching the symbols from PLC.');
+            //Get the UploadInfo.
+            try {
+                getUploadInfo();
+            } catch (e) {
+                log('TAME library error: Could\'nt fetch the symbol information from the PLC:' + e);
+                return;
+            }
+        } else {
+            service.onReady();
+        }
+    }
     
     //----------------------------Test--------------------------------
     //log('TAME library info: Reading the PLC state ...');
@@ -4696,22 +4726,12 @@ TAME.WebServiceClient = function (service) {
     } else {
         if (typeof service.configFileUrl == 'string') {
             log('TAME library info: Fetching the TPY file from the webserver.');
-            //Get the symbol file and parse it.
+            //Get the symbol file and parse it. Upload Info will be fetched after.
             getConfigFile();
-        }
-        
-        setServiceParamFromTPY();
-        
-        if (typeof service.configFileUrl != 'string' || service.forceUploadUsage === true) {
-            log('TAME library info: Start fetching the symbols from PLC.');
-            //Get the UploadInfo.
-            try {
-                getUploadInfo();
-            } catch (e) {
-                log('TAME library error: Could\'nt fetch the symbol information from the PLC:' + e);
-                return;
-            }
-        }
+        } else {
+            //Start getting the Upload Info.
+            checkGetUploadInfo();
+        }      
     }
     
 };
