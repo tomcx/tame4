@@ -34,9 +34,8 @@ Supported data types are BOOL, BYTE, WORD, DWORD, USINT, SINT, UINT, INT, UDINT,
 and STRING. There is also a special „type“ named INT1DP: It's an INT in the PLC, but in JavaScript the variable is of 
 type float with 1 decimal place (i.e. a value of 568 in the PLC is 56.8 in JavaScript). The library provides built-in 
 conversion of date and time values to formatted strings and REAL values can be rounded to a desired number of decimal 
-places. For writing arrays and arrays of structures there is an option to choose only one array item to send to the 
-PLC instead of the whole array. Another feature is the automatic structure padding for exchanging data with 
-TwinCAT 2 and ARM-based devices (i.e. CX90xx) or with TwinCAT 3. TwinCAT 3 is supported with V3.4.
+places. Another feature is the automatic structure padding for exchanging data with TwinCAT 2 and ARM-based devices 
+(i.e. CX90xx) or with TwinCAT 3.
 
 
 Requirements

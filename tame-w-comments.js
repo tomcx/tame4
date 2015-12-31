@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V3.6 beta
+ * TAME [TwinCAT ADS Made Easy] V4.0 alpha 151231
  * 
  * Copyright (c) 2009-2015 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'3.6 beta',
+    version:'V4.0 alpha 151231',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -74,9 +74,6 @@ TAME.WebServiceClient = function (service) {
     //======================================================================================
 
     var instance = this,
-    
-        //Version
-        version = 'TAME V3.6 beta',
 
         //Index-Group's
         indexGroups = {
