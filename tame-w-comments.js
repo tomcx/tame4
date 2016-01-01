@@ -1,7 +1,7 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.0 alpha 151231
+ * TAME [TwinCAT ADS Made Easy] V4.0 beta 160101
  * 
- * Copyright (c) 2009-2015 Thomas Schmidt; t.schmidt.p1 at freenet.de
+ * Copyright (c) 2009-2016 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
  * Dual licensed under:
  *  MIT - http://www.opensource.org/licenses/mit-license
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.0 alpha 151231',
+    version:'V4.0 beta 160101',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -4682,7 +4682,9 @@ TAME.WebServiceClient = function (service) {
     };
  
  
- 
+    /**
+     * Check if the UploadInfo has to be fetched.
+     */
     function checkGetUploadInfo() {
         
         setServiceParamFromTPY();
@@ -4697,7 +4699,19 @@ TAME.WebServiceClient = function (service) {
                 return;
             }
         } else {
+            onReady();
+        }
+    }
+    
+    /**
+     * Call the onReady function.
+     */
+    function onReady() {
+        if (typeof service.onReady == 'function') {
+            log('TAME library info: Calling the "onReady" function.');
             service.onReady();
+        } else {
+            log('TAME library error: No "onReady" function defined. Check the manual.');
         }
     }
     
@@ -4722,6 +4736,8 @@ TAME.WebServiceClient = function (service) {
         }
         
         log('TAME library info: Target information: NetId: ' + service.amsNetId + ', AMS port: ' + service.amsPort + ' , alignment: ' + alignment);
+
+        window.setTimeout(onReady, 1);
         
     } else {
         if (typeof service.configFileUrl == 'string') {
