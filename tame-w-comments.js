@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.0 beta 160101
+ * TAME [TwinCAT ADS Made Easy] V4.0 beta 160103
  * 
  * Copyright (c) 2009-2016 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.0 beta 160101',
+    version:'V4.0 beta 160103',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -4322,7 +4322,7 @@ TAME.WebServiceClient = function (service) {
             log('TAME library info: End of fetching the symbols.');
             log('TAME library info: Symbol table ready.');
             
-            service.onReady();
+            onReady();
               
         } catch (e) {
             log('TAME library error: Parsing of uploaded symbol information failed:' + e);
