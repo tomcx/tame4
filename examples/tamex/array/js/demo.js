@@ -1,6 +1,6 @@
 /**
- *  @author T.Schmidt, 31.10.2011
- *  Example using arrays with TAME.
+ *  @author T.Schmidt, 02.01.2016
+ *  Example using arrays with TAME 4.
  */
 
 //A global variable as namespace
@@ -12,7 +12,14 @@ var Demo = {
 };
             
 
-window.onload = function(){
+//Function for starting the client. Defined in "webservice.js"
+//in the "resources" directory. 
+window.onload = startClient;
+
+
+//This function is called if client is ready (on-ready-function).
+//See "webservice.js" in the "resources" directory. 
+function loadExample() {
     
     /*
      * Array of STRING

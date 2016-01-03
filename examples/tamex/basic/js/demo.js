@@ -1,17 +1,25 @@
 /**
- *  @author T.Schmidt, 14.06.2012
- *  Last change 27.03.2015
- *  Very basic example using TAME 3.
+ *  @author T.Schmidt, 02.01.2015
+ *  Very basic example using TAME 4.
  */
+
 
 //Global variables
 var field1, field2, field5, field6, field7, field8, field9, 
     field10, field11, field12, field13, field20, field21,
-    counter1, counter2, pollZyk1, runLight = [];
+    counter1, counter2, pollCycl, runLight = [];
 
-window.onload = function() {
+
+//Function for starting the client. Defined in "webservice.js"
+//in the "resources" directory. 
+window.onload = startClient;
+
+
+//This function is called if client is ready (on-ready-function).
+//See "webservice.js" in the "resources" directory. 
+function loadExample() {
   
-    //Output fields, must be defined global.
+    //Output fields.
     field1 = document.getElementById('field1').firstChild;
     field2 = document.getElementById('field2').firstChild;
     field5 = document.getElementById('field5').firstChild;
@@ -32,11 +40,11 @@ window.onload = function() {
      */
 
     //Functions for reading data not included in the cyclic polling
-    //just for showing how to use them with a on-complete-function.
-    var pollWert1 = function() {
+    //just for showing how to use them with an on-complete-function.
+    var pollValue1 = function() {
         Plc.readBool({name: '.In_Bool1', jvar: 'field1.data'});
     };
-    var pollWert2 = function() {
+    var pollValue2 = function() {
         Plc.readBool({name: '.In_Bool2', jvar: 'field2.data'});
     };
     
@@ -45,12 +53,13 @@ window.onload = function() {
     //oc = on-complete, ocd = on-complete-delay (in ms)
     document.getElementById('button1').onclick = function() {
         var wert = document.getElementById('checkbox1').checked;
-        Plc.writeBool({name: '.IN_BOOL1', val: wert, oc: pollWert1, ocd: 50});
+        Plc.writeBool({name: '.IN_BOOL1', val: wert, oc: pollValue1, ocd: 50});
     };
     document.getElementById('button2').onclick = function() {
         var wert = document.getElementById('checkbox2').checked;
-        Plc.writeBool({name: '.In_Bool2', val: wert, oc: pollWert2, ocd: 50});
+        Plc.writeBool({name: '.In_Bool2', val: wert, oc: pollValue2, ocd: 50});
     };
+    
     
     
     //Buttons for writing values, the reading is done by the SumReadRequest
@@ -105,7 +114,7 @@ window.onload = function() {
      
     //This function reads the data of the variables 
     //an calls itself again. Of course you can use "setInterval" instead.
-    pollZyk1 = function(){
+    pollCycl = function(){
         
         var i;
         
@@ -164,10 +173,7 @@ window.onload = function() {
                     name: '.DATE_Test',
                     jvar: 'field12.data',
                     format:'#WEEKDAY#, #DD#.#MM#.#YYYY'
-                },/*{
-                    name: '.DATE_Test',
-                    jvar: 'field12.data'
-                },*/{
+                },{
                     name: '.In_REAL',
                     jvar: 'field13.data',
                     dp: 2
@@ -177,6 +183,7 @@ window.onload = function() {
                 }
             ],
             oc: function() {
+                //On-complete-function
                 //Set the background-color after reading data
                 for (i = 0; i < 5; i++) {
                     if (runLight[i] === true) {
@@ -188,16 +195,17 @@ window.onload = function() {
             }
         });
         
-        window.setTimeout('pollZyk1()', 100); //Timeout 100 ms
+        //Call the function again
+        window.setTimeout('pollCycl()', 100); //Timeout 100 ms
     };
 
     
     /*
-     *  Start
+     *  Start polling
      */    
-    pollZyk1();
-    pollWert1();
-    pollWert2();
+    pollCycl();
+    pollValue1();
+    pollValue2();
 
 };
 
