@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.0 beta 160103
+ * TAME [TwinCAT ADS Made Easy] V4.0 beta 160104
  * 
  * Copyright (c) 2009-2016 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.0 beta 160103',
+    version:'V4.0 beta 160104',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -421,7 +421,7 @@ TAME.WebServiceClient = function (service) {
                 log(req);
                 return;
             }
-        } else if (req.useHandle === true || service.useHandles === true) {
+        } else if (req.useHandle === true || service.useHandles === true && req.useHandle !== false) {
             //Get the IndexGroup for the Value By Handle Request
             indexGroup = indexGroups.ValueByHandle;
         } else if (req.symbolName) {
@@ -487,7 +487,7 @@ TAME.WebServiceClient = function (service) {
                 log(req);
                 return;
             }
-        } else if (req.useHandle === true || service.useHandles === true) {
+        } else if (req.useHandle === true || service.useHandles === true && req.useHandle !== false) {
             //Try to get the handle for this request
             if (instance.handleCacheReady === true) {
                 //Get handle code
@@ -685,43 +685,50 @@ TAME.WebServiceClient = function (service) {
             
         } else if (instance.symTableReady) {
             //Try to get the type from the symbol table
-            try {
-                if (item.type === undefined) {
-                    itemInfo.type = symTable[itemInfo.symbolName].type;
+            if (typeof symTable[item.name] == 'object') {
+                try {
+                    if (item.type === undefined) {
+                        itemInfo.type = symTable[item.name].type;
+                    }
+    
+                    itemInfo.arrayLength = symTable[item.name].arrayLength;
+                    itemInfo.arrayDataType = symTable[item.name].arrayDataType;
+                    itemInfo.dataType = symTable[item.name].dataType;
+                    itemInfo.itemSize = symTable[item.name].itemSize;
+                    
+                    if (itemInfo.size === undefined) {
+                        itemInfo.size = symTable[item.name].size;
+                    }
+                    
+                    itemInfo.bitOffset = symTable[item.name].bitOffset;
+                    itemInfo.offs = item.offs;
+                    
+                    if (itemInfo.type === 'STRING' || itemInfo.arrayDataType === 'STRING') {
+                        itemInfo.stringLength = symTable[item.name].stringLength;
+                        itemInfo.format = itemInfo.stringLength; //compatibility
+                    } else if (typeof item.format === 'string') {
+                        itemInfo.format = item.format;
+                    } else if (typeof item.decPlaces  === 'number') {
+                        itemInfo.format = item.decPlaces;
+                    } else if (typeof item.dp  === 'number') {
+                        itemInfo.format = item.dp;
+                    }
+                    
+                    if (itemInfo.symbolNameArrIdx !== undefined && itemInfo.type === 'ARRAY') {
+                        itemInfo.type = symTable[item.name].arrayDataType;
+                        itemInfo.size = symTable[item.name].itemSize;
+                    }
+                    
+                } catch(e) {
+                    log('TAME library error: A problem occured while reading a data type from the symbol table!');
+                    log(e);
+                    log(item);
                 }
-
-                itemInfo.arrayLength = symTable[itemInfo.symbolName].arrayLength;
-                itemInfo.arrayDataType = symTable[itemInfo.symbolName].arrayDataType;
-                itemInfo.dataType = symTable[itemInfo.symbolName].dataType;
-                itemInfo.itemSize = symTable[itemInfo.symbolName].itemSize;
-                
-                if (itemInfo.size === undefined) {
-                    itemInfo.size = symTable[itemInfo.symbolName].size;
+            } else {
+                if (typeof item.type != 'string') {
+                    log('TAME library error: Neither an entry for this symbol in the symbol table nor the type defined by user!');
+                    log(item);
                 }
-                
-                itemInfo.bitOffset = symTable[itemInfo.symbolName].bitOffset;
-                itemInfo.offs = item.offs;
-                
-                if (itemInfo.type === 'STRING' || itemInfo.arrayDataType === 'STRING') {
-                    itemInfo.stringLength = symTable[itemInfo.symbolName].stringLength;
-                    itemInfo.format = itemInfo.stringLength; //compatibility
-                } else if (typeof item.format === 'string') {
-                    itemInfo.format = item.format;
-                } else if (typeof item.decPlaces  === 'number') {
-                    itemInfo.format = item.decPlaces;
-                } else if (typeof item.dp  === 'number') {
-                    itemInfo.format = item.dp;
-                }
-                
-                if (itemInfo.symbolNameArrIdx !== undefined && itemInfo.type === 'ARRAY') {
-                    itemInfo.type = symTable[itemInfo.symbolName].arrayDataType;
-                    itemInfo.size = symTable[itemInfo.symbolName].itemSize;
-                }
-                
-            } catch(e) {
-                log('TAME library error: A problem occured while reading a data type from the symbol table!');
-                log(e);
-                log(item);
             }
 
         }
@@ -2315,7 +2322,8 @@ TAME.WebServiceClient = function (service) {
             } else if (instance.dataTypeTableReady === true && item.def === undefined) {
                 item.def = createStructDef(itemInfo.dataType);
             } else if (typeof item.def !== 'object') {
-                log('TAME library error: No structure defininition found!');
+                log('TAME library error: No structure defininition found (parseSumReadReq())!');
+                log(item);
             }
             
             for (elem in item.def) {
@@ -2420,7 +2428,7 @@ TAME.WebServiceClient = function (service) {
                 
                 //Slice the string and decode the data
                 dataSubString = dataString.substr(strAddr, itemSize);
-                
+
                 switch (type) {
                     
                     case 'ARRAY':
@@ -3088,7 +3096,8 @@ TAME.WebServiceClient = function (service) {
         } else if (instance.dataTypeTableReady === true && args.def === undefined) {
             args.def = createStructDef(itemInfo.dataType);
         } else if (typeof args.def !== 'object') {
-            log('TAME library error: No structure defininition found!');
+            log('TAME library error: No structure defininition found (createArrayDescriptor())!');
+            log(args);
         }
         
         reqDescr = {
@@ -3490,7 +3499,8 @@ TAME.WebServiceClient = function (service) {
             } else if (instance.dataTypeTableReady === true && item.def === undefined) {
                 item.def = createStructDef(itemInfo.dataType);
             } else if (typeof item.def !== 'object') {
-                log('TAME library error: No structure defininition found!');
+                log('TAME library error: No structure defininition found (sumWriteReq())!');
+                log(item);
             }
             
             //Walk through the structure definiton
