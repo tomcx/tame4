@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.0 beta 160104
+ * TAME [TwinCAT ADS Made Easy] V4.0 beta 160106
  * 
  * Copyright (c) 2009-2016 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.0 beta 160104',
+    version:'V4.0 beta 160106',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -66,6 +66,9 @@ TAME.WebServiceClient = function (service) {
             alert(message);
         }
     }
+    
+    //Log version
+    log('TAME library version: ' + TAME.version);
     
     
     
@@ -194,9 +197,6 @@ TAME.WebServiceClient = function (service) {
     //======================================================================================
     //                                Check Client Parameter
     //======================================================================================
-    
-    //Start
-    log('TAME library version: ' + TAME.version);
     
     //URL of the TcAdsWebService.dll
     if (typeof service.serviceUrl !== 'string') {
@@ -2483,6 +2483,7 @@ TAME.WebServiceClient = function (service) {
         var response,
         itemList = adsReq.reqDescr.items,
         arrType = [],
+        arrDeletedHdl = [],
         strAddr = 0,
         subStrAddr = 0,
         dataObj = window,
@@ -2509,6 +2510,7 @@ TAME.WebServiceClient = function (service) {
                         //Delete the handle in the handle list
                         delIdx = handleNames.indexOf(symName);
                         delete handleNames[delIdx];
+                        arrDeletedHdl[idx] = symName;
                     }
                 } else {
                     log('TAME library error: ADS sub command error while processing a SumReadRequest!');
@@ -2529,6 +2531,9 @@ TAME.WebServiceClient = function (service) {
                 if (handleNames.length === 0) {
                     instance.handleCacheReady = false;
                     log('TAME library info: All handles released.');
+                } else {
+                    log('TAME library info: Released handles:');
+                    log(arrDeletedHdl);
                 }
             }
         } catch (e) {
@@ -4007,18 +4012,17 @@ TAME.WebServiceClient = function (service) {
             
         //Check if a request descriptor exists
         if (reqDescr === undefined) {
-            reqDescr = {};
-        } else {
-            //Check if a user defined handle list exists
-            if (reqDescr.symbols !== undefined) {
-                arrlen = reqDescr.symbols.length;
-                for (idx = 0; idx < arrlen; idx++) {
-                    symNames[idx] = reqDescr.symbols[idx].toUpperCase();                  
-                }
-            } else {
-                arrlen = handleNames.length;
-                symNames = handleNames;
+            reqDescr = {}; 
+        } 
+        //Check if a user defined handle list exists
+        if (reqDescr.symbols !== undefined) {
+            arrlen = reqDescr.symbols.length;
+            for (idx = 0; idx < arrlen; idx++) {
+                symNames[idx] = reqDescr.symbols[idx].toUpperCase();                  
             }
+        } else {
+            arrlen = handleNames.length;
+            symNames = handleNames;
         }
         
         //Preset the read length with the number of byte for error codes.
