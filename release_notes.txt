@@ -7,7 +7,7 @@
   table. With asynchronous requests became a new 'onReady' property nessecary 
   and the process of starting the client is different to V3.x. 
   
-  !!! If you want to replace V3.x with V4 you have to change the calling of
+  !!! If you want to replace V3.x with V4 you have to change the way of starting
   your scripts !!!
 
 - New feature: Handles are supported now. There are functions for getting and
