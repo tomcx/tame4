@@ -1,5 +1,5 @@
 /**
- *  @author T.Schmidt, 07.01.2015
+ *  @author T.Schmidt, 07.01.2016
  *  Example using handles.
  */
 
