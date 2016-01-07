@@ -1,5 +1,5 @@
 /**
- *  @author T.Schmidt, 04.01.2015
+ *  @author T.Schmidt, 07.01.2015
  *  Example using handles.
  */
 
@@ -11,19 +11,18 @@ var field1, field2, field5, field6, field7, field8, field9,
 
 
 //Function for starting the client. Defined in "webservice.js"
-//in the "resources" directory. 
-window.onload = function() {
+//in the "resources" directory. Of course you can use "window.onload"
+//as in the other examples. 
+window.addEventListener("load", function (event) {
     startClient(true);
-};
+});
 
-//Release the handles if document is closed.
-window.onbeforeunload = function() {
-    Plc.releaseHandles({
-        oc: function() {
-          alert('All handles released.');
-        }
-    });
-};
+//Release handles before leaving the page
+window.addEventListener("beforeunload", function (event) {
+    Plc.releaseHandles();
+    //event.returnValue = 'Handles released.'; 
+});
+
 
 //This function is called if client is ready (on-ready-function).
 //See "webservice.js" in the "resources" directory. 
