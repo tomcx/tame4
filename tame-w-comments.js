@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.0 beta 160106
+ * TAME [TwinCAT ADS Made Easy] V4.0 beta 160107
  * 
  * Copyright (c) 2009-2016 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.0 beta 160106',
+    version:'V4.0 beta 160107',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -238,7 +238,7 @@ TAME.WebServiceClient = function (service) {
     
     //Global synchronous XMLHTTPRequests
     if (service.syncXmlHttp === true) {
-        log('TAME library info: The "syncXmlHttp" parameter was set. Synchronous XMLHttpRequests will be used by default.');
+        log('TAME library info: The "syncXmlHttp" parameter is set to true. Synchronous XMLHttpRequests will be used by default.');
     }
     
     //Username/password
@@ -251,7 +251,7 @@ TAME.WebServiceClient = function (service) {
     
     //Global use of handles
     if (service.useHandles === true) {
-        log('TAME library info: The "useHandles" parameter was set. Handles will be used for all requests.');
+        log('TAME library info: The "useHandles" parameter is set to true. Handles will be used by default.');
     }
     
     
@@ -3938,6 +3938,8 @@ TAME.WebServiceClient = function (service) {
             reqBuffer = [],
             arrlen  = reqDescr.symbols.length,
             bytes, idx, len, pwrData, format, symname, i;
+            
+        log('TAME library info: Fetching handles from the PLC.');
                  
         //Read lenth with the number of byte for error codes.
         //4 bytes requested data, 4 bytes for errorcode and 4 bytes for the length
@@ -4009,6 +4011,8 @@ TAME.WebServiceClient = function (service) {
             symNames = [],
             i = 0,
             idx, pwrData;
+            
+        log('TAME library info: Releasing handles.');
             
         //Check if a request descriptor exists
         if (reqDescr === undefined) {
