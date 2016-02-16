@@ -16,8 +16,8 @@ The library allows to exchange data with a TwinCAT PLC without any knowledge of 
 webserver running on the PLC device and the ADS commands are wrapped in AJAX/SOAP requests. Have a look at the
 manual and the examples for more information.
 
-If you want to know more about the basics of the access to the ADS WebService with JavaScript look at the example 
-[here] (http://infosys.beckhoff.com/content/1031/tcsample_webservice/html/webservice_samplejs.html).
+If you want to know more about the basics of the access to the ADS WebService visit the Beckhoff website
+[here] (http://infosys.beckhoff.com/content/1033/tc3_adswebservice/html/webservice_intro.htm).
 
 TAME 4 became necessary because the synchronous XMLHttpRequest outside of workers is in the process of being removed
 from the web platform. It's already deprecated in most browsers and will be removed over the years. TAME 3 uses
@@ -34,7 +34,7 @@ Features
 - Supported data types: BOOL, BYTE, WORD, DWORD, USINT, SINT, UINT, INT, UDINT, DINT, TIME, TOD, DT, DATE, REAL, LREAL
   and STRING.
 
-- Sum commandos are supported (read and write).
+- Sum commands are supported (read and write).
 
 - Handles are supported. Access to single elements of structures and arrays and also internal variables and parameters
   of FB's is possible.
