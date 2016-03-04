@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.0 beta 160107
+ * TAME [TwinCAT ADS Made Easy] V4.0 beta 160304
  * 
  * Copyright (c) 2009-2016 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.0 beta 160107',
+    version:'V4.0 beta 160304',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -239,6 +239,9 @@ TAME.WebServiceClient = function (service) {
     //Global synchronous XMLHTTPRequests
     if (service.syncXmlHttp === true) {
         log('TAME library info: The "syncXmlHttp" parameter is set to true. Synchronous XMLHttpRequests will be used by default.');
+    } else {
+        //Don't let it undefined
+        service.syncXmlHttp === false;
     }
     
     //Username/password
@@ -4183,11 +4186,11 @@ TAME.WebServiceClient = function (service) {
         //Generate the ADS request object and call the send function.
         var adsReq = {
             method: 'Read',
-            //sync: true,
             indexGroup: indexGroups.UploadInfo,
             indexOffset: 0,
             reqDescr: {
-                readLength: 8
+                readLength: 8,
+                //sync: false
             }
         };
         createRequest(adsReq).send();
@@ -4217,11 +4220,11 @@ TAME.WebServiceClient = function (service) {
         
         adsReq2 = {
             method: 'Read',
-            //sync: true,
             indexGroup: indexGroups.Upload,
             indexOffset: 0,
             reqDescr: {
-                readLength: uploadLength   
+                readLength: uploadLength,
+                //sync: false
             }
         };
         createRequest(adsReq2).send();
@@ -4340,7 +4343,9 @@ TAME.WebServiceClient = function (service) {
             log('TAME library info: End of fetching the symbols.');
             log('TAME library info: Symbol table ready.');
             
-            onReady();
+            if (service.syncXmlHttp !== true) {
+                onReady();
+            }
               
         } catch (e) {
             log('TAME library error: Parsing of uploaded symbol information failed:' + e);
@@ -4362,8 +4367,8 @@ TAME.WebServiceClient = function (service) {
         
         log('TAME library info: Start reading the TPY file.');
         
-        //Synchronous HTTPRequest
-        xmlHttpReq.open('GET', service.configFileUrl, true);
+        //HTTPRequest
+        xmlHttpReq.open('GET', service.configFileUrl, !service.syncXmlHttp, service.serviceUser, service.servicePassword);
         xmlHttpReq.setRequestHeader('Content-Type', 'text/xml');
 
         xmlHttpReq.onreadystatechange = function() {
@@ -4674,18 +4679,18 @@ TAME.WebServiceClient = function (service) {
     function setServiceParamFromTPY() {
         if (typeof service.amsNetId !== 'string') {
             service.amsNetId = serviceInfo.netId;
-            log('TAME library info: No NetId definition found. NetId from TPY file is used.');
+            log('TAME library info: No NetId definition found. NetId from TPY file will be used.');
         }
         
         if (typeof service.amsPort !== 'string') {
             service.amsPort = serviceInfo.port;
-            log('TAME library info: No AMS port definition found. Port number from TPY file is used.');
+            log('TAME library info: No AMS port definition found. Port number from TPY file will be used.');
         }
         
         if (alignment === 0) {
             if (serviceInfo.alignment !== undefined) {
                 alignment = serviceInfo.alignment;
-                log('TAME library info: No alignment parameter found. Alignment from TPY file is used.');
+                log('TAME library info: No alignment parameter found. Alignment from TPY file will be used.');
             } else {
                 alignment = 1;
                 log('TAME library warning: Can\'t get a value for the data aligment. Default value for alignment is used (1). This works only with TC2 and x86 processors.');
@@ -4717,7 +4722,9 @@ TAME.WebServiceClient = function (service) {
                 return;
             }
         } else {
-            onReady();
+            if (service.syncXmlHttp !== true) {
+                onReady();
+            }
         }
     }
     
@@ -4754,8 +4761,10 @@ TAME.WebServiceClient = function (service) {
         }
         
         log('TAME library info: Target information: NetId: ' + service.amsNetId + ', AMS port: ' + service.amsPort + ' , alignment: ' + alignment);
-
-        window.setTimeout(onReady, 1);
+        
+        if (service.syncXmlHttp !== true) {
+            window.setTimeout(onReady, 1);
+        }
         
     } else {
         if (typeof service.configFileUrl == 'string') {
