@@ -9,7 +9,7 @@ TAME is JavaScript library created for an easy and comfortable access to the Twi
 acronym for „TwinCAT ADS Made Easy“ and stands also for „taming“ the complexity of ADS and AJAX requests. 
 Originally a „wast product“ from the programming of a browser based visualisation for my home, it has become a (in my
 opinion) useful little piece of software and I hope it will help others who want to develop their own visualisations. 
-I'm not a professional programmer (in fact this is my first "seroius" project), so don't get upset when you look at 
+I'm not a professional programmer (in fact this is my first "serious" project), so don't get upset when you look at 
 the code.
 
 The library allows to exchange data with a TwinCAT PLC without any knowledge of ADS. The browser connects to the 
@@ -32,7 +32,7 @@ Features
 - Methods for read and write access to single variables, variable blocks, arrays and structures exists.
 
 - Supported data types: BOOL, BYTE, WORD, DWORD, USINT, SINT, UINT, INT, UDINT, DINT, TIME, TOD, DT, DATE, REAL, LREAL
-  and STRING.
+  and STRING. Bounds checking is implemented but can be switched off.
 
 - Sum commands are supported (read and write).
 
@@ -55,7 +55,9 @@ Features
 
 - Automatic structure padding for exchanging data with TwinCAT 2 and ARM-based devices (i.e. CX90xx) or with TwinCAT 3.
 
-- Export/import functions for symbols and data types to/from files. Intented for the use with TASKER (Android).
+- Export/import functions for symbols and data types to/from files. Intented for the use with Tasker (Android).
+
+- Force synchronous XMLHttpRequests for easier scripting in Tasker.
 
 
 Requirements

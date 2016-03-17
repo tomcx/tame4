@@ -1,5 +1,5 @@
 /**
- *  @author T.Schmidt, 02.01.2015
+ *  @author T.Schmidt, 02.01.2016
  *  Very basic example using TAME 4.
  */
 

@@ -13,6 +13,8 @@
 - New feature: Handles are supported now. There are functions for getting and
   releasing handles as well as for logging them to the JavaScript console.
   TwinCAT 2.11 >= Build 1550 is needed to use this feature.
+  
+- Bugfix: User and password were not used for fetching the TPY file, fixed.
 
  
 
