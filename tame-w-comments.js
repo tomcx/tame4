@@ -4376,7 +4376,7 @@ TAME.WebServiceClient = function (service) {
             if ((xmlHttpReq.readyState === 4) && (xmlHttpReq.status === 200)) {
                 
                 //Create a DOM object from XML
-                if (typeof DOMParser != 'undefied') {
+                if (typeof DOMParser != 'undefined') {
                     try {
                         configFile = (new DOMParser()).parseFromString(xmlHttpReq.responseText, "text/xml");
                     } catch (e) {
