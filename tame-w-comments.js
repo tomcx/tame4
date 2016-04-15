@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.0 160317
+ * TAME [TwinCAT ADS Made Easy] V4.0.1 160416
  * 
  * Copyright (c) 2009-2016 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.0 160317',
+    version:'V4.0.1 160416',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -4376,7 +4376,7 @@ TAME.WebServiceClient = function (service) {
             if ((xmlHttpReq.readyState === 4) && (xmlHttpReq.status === 200)) {
                 
                 //Create a DOM object from XML
-                if (typeof DOMParser == 'function') {
+                if (typeof DOMParser != 'undefied') {
                     try {
                         configFile = (new DOMParser()).parseFromString(xmlHttpReq.responseText, "text/xml");
                     } catch (e) {
@@ -4384,7 +4384,7 @@ TAME.WebServiceClient = function (service) {
                         return;
                     }
                 } else {
-                    log('TAME library error: Can\'t parse the symbol file cause your brower does not provide a DOMParser function.');
+                    log('TAME library error: Can\'t parse the symbol file cause your browser does not provide a DOMParser function.');
                 }
          
                 
