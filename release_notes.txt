@@ -1,3 +1,11 @@
+                      TAME V4.0.1 Release Notes 
+                      -------------------------
+
+- Bugfix: The onReady function was not executed under iOS, fixed.
+
+
+
+
                        TAME V4.0 Release Notes 
                        -----------------------
 
