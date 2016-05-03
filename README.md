@@ -55,7 +55,7 @@ Features
 
 - Automatic structure padding for exchanging data with TwinCAT 2 and ARM-based devices (i.e. CX90xx) or with TwinCAT 3.
 
-- Export/import functions for symbols and data types to/from files. Intented for the use with Tasker (Android).
+- Export/import functions for symbols and data types to/from JSON. Intented for the use with Tasker (Android).
 
 - Force synchronous XMLHttpRequests for easier scripting in Tasker.
 
