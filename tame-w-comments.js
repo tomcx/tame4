@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.0.1 160416
+ * TAME [TwinCAT ADS Made Easy] V4.0.2b 161106
  * 
  * Copyright (c) 2009-2016 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.0.1 160416',
+    version:'V4.0.2b 161106',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -4601,10 +4601,18 @@ TAME.WebServiceClient = function (service) {
                                             dataTypeTable[name].subItems[sName].fullType = typeArr[0] + '.' + arrayLength + '.' + type[0];
                                         }
                                         
-                                        dataTypeTable[name].subItems[sName].bitSize = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].bitSize;
-                                        dataTypeTable[name].subItems[sName].size = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].size;
-                                        
-                                        
+                                        //Check added cause there are undefined data types some TwinCAT libs 
+                                        if (dataTypeTable[dataTypeTable[name].subItems[sName].typeString] !== undefined) {
+                                            dataTypeTable[name].subItems[sName].bitSize = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].bitSize;
+                                            dataTypeTable[name].subItems[sName].size = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].size;
+                                        } else {
+                                            log('TAME library error: Data type missing in TPY file:');
+                                            log(dataTypeTable[name].subItems[sName]);
+                                            log('TAME library warning: Access to symbols using this data type will return wrong results:');
+                                            log(name);
+                                            log('TAME library info: Use handles to access symbols using this data type.');
+                                        }
+                                                       
                                         //Item length
                                         dataTypeTable[name].subItems[sName].itemSize = dataTypeTable[name].subItems[sName].size / arrayLength;
                                         
