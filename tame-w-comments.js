@@ -1,7 +1,7 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.0.2b 161106
+ * TAME [TwinCAT ADS Made Easy] V4.0.2b 170526
  * 
- * Copyright (c) 2009-2016 Thomas Schmidt; t.schmidt.p1 at freenet.de
+ * Copyright (c) 2009-2017 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
  * Dual licensed under:
  *  MIT - http://www.opensource.org/licenses/mit-license
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.0.2b 161106',
+    version:'V4.0.2b 170526',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -257,6 +257,12 @@ TAME.WebServiceClient = function (service) {
         log('TAME library info: The "useHandles" parameter is set to true. Handles will be used by default.');
     }
     
+    //Don't check for missing data types (thats a problem with some TwinCAT libs)
+    if (service.ignoreMissingTypes === true) {
+        log('TAME library info: The "ignoreMissingTypes" parameter is set to true. There will only be a log message if there are TwinCAT libs with missing data types.');
+    } else {
+        service.ignoreMissingTypes = false;
+    }
     
     //======================================================================================
     //                                Initialize Properties
@@ -933,12 +939,21 @@ TAME.WebServiceClient = function (service) {
                 
                 if (async === true) {
                     //asynchronous request
+                    /*this.xmlHttpReq.timeout = 4000;
+                    this.xmlHttpReq.ontimeout = function(e) {
+                        adsReq.reqDescr.oe();
+                    };*/
                     this.xmlHttpReq.onreadystatechange = function() {
-                        if ((adsReq.xmlHttpReq.readyState === 4) && (adsReq.xmlHttpReq.status === 200)) {
-                            instance.parseResponse(adsReq);
+                        if (adsReq.xmlHttpReq.readyState === 4) {
+                            if (adsReq.xmlHttpReq.status === 200) {
+                                instance.parseResponse(adsReq);
+                            } else if (typeof adsReq.reqDescr.oe === 'function') {
+                                //on error function (experimental)
+                                adsReq.reqDescr.oe();
+                            }
                         }
                     };
-                    this.xmlHttpReq.send(soapReq);  
+                    this.xmlHttpReq.send(soapReq);
                 } else {
                     //synchronous request
                     this.xmlHttpReq.send(soapReq);
@@ -2693,6 +2708,7 @@ TAME.WebServiceClient = function (service) {
             id: args.id,
             oc: args.oc,
             ocd: args.ocd,
+            oe: args.oe,
             readLength: len,
             debug: args.debug,
             sync: args.sync,
@@ -2870,6 +2886,7 @@ TAME.WebServiceClient = function (service) {
                 id: args.id,
                 oc: args.oc,
                 ocd: args.ocd,
+                oe: args.oe,
                 debug: args.debug,
                 readLength: structByteLen * arrayLength,
                 seq: true,
@@ -3024,6 +3041,7 @@ TAME.WebServiceClient = function (service) {
                 id: args.id,
                 oc: args.oc,
                 ocd: args.ocd,
+                oe: args.oe,
                 readLength: len * arrayLength,
                 debug: args.debug,
                 seq: true,
@@ -3119,6 +3137,7 @@ TAME.WebServiceClient = function (service) {
             id: args.id,
             oc: args.oc,
             ocd: args.ocd,
+            oe: args.oe,
             debug: args.debug,
             seq: true,
             calcAlignment: true,
@@ -3860,12 +3879,21 @@ TAME.WebServiceClient = function (service) {
             log('TAME library error: Request contains no XML data. Object "responseXML" is null.');
             log('TAME library error: This is the "responseText":');
             log(adsReq.xmlHttpReq.responseText);
+            if (typeof adsReq.reqDescr.oe === 'function') {
+                //on error function (experimental)
+                adsReq.reqDescr.oe();
+            }
+            return;
         }
         
         try {
             response = adsReq.xmlHttpReq.responseXML.documentElement;
         } catch (e) {
             log('TAME library error: No XML data in server response:' + e);
+            if (typeof adsReq.reqDescr.oe === 'function') {
+                //on error function (experimental)
+                adsReq.reqDescr.oe();
+            }
             return;
         }
                
@@ -3879,7 +3907,11 @@ TAME.WebServiceClient = function (service) {
                 errorCode = '-';
             }
             log('TAME library error: Message from server:  ' + errorText + ' (' + errorCode + ')');
-            
+
+            if (typeof adsReq.reqDescr.oe === 'function') {
+                //on error function (experimental)
+                adsReq.reqDescr.oe();
+            }
             return;
         } catch (ex) {
             errorCode = 0;
@@ -4601,17 +4633,22 @@ TAME.WebServiceClient = function (service) {
                                             dataTypeTable[name].subItems[sName].fullType = typeArr[0] + '.' + arrayLength + '.' + type[0];
                                         }
                                         
-                                        //Check added cause there are undefined data types some TwinCAT libs 
-                                        if (dataTypeTable[dataTypeTable[name].subItems[sName].typeString] !== undefined) {
-                                            dataTypeTable[name].subItems[sName].bitSize = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].bitSize;
-                                            dataTypeTable[name].subItems[sName].size = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].size;
-                                        } else {
+                                        //Check added cause there are undefined data types some TwinCAT libs                                         
+                                        if (service.ignoreMissingTypes === true && dataTypeTable[dataTypeTable[name].subItems[sName].typeString] === undefined) {
                                             log('TAME library error: Data type missing in TPY file:');
                                             log(dataTypeTable[name].subItems[sName]);
                                             log('TAME library warning: Access to symbols using this data type will return wrong results:');
                                             log(name);
                                             log('TAME library info: Use handles to access symbols using this data type.');
+                                        } else {
+                                            if (dataTypeTable[dataTypeTable[name].subItems[sName].typeString] === undefined) {
+                                                log('TAME library error: Data type missing in TPY file!');
+                                                log('TAME library info: If you don\'t use this data type you can set the client parameter "ignoreMissingTypes" to true.');
+                                            }
+                                            dataTypeTable[name].subItems[sName].bitSize = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].bitSize;
+                                            dataTypeTable[name].subItems[sName].size = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].size;
                                         }
+                                                       
                                                        
                                         //Item length
                                         dataTypeTable[name].subItems[sName].itemSize = dataTypeTable[name].subItems[sName].size / arrayLength;
