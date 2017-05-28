@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.0.2b 170526
+ * TAME [TwinCAT ADS Made Easy] V4.1b 170528
  * 
  * Copyright (c) 2009-2017 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.0.2b 170526',
+    version:'V4.1b 170528',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -258,10 +258,10 @@ TAME.WebServiceClient = function (service) {
     }
     
     //Don't check for missing data types (thats a problem with some TwinCAT libs)
-    if (service.ignoreMissingTypes === true) {
-        log('TAME library info: The "ignoreMissingTypes" parameter is set to true. There will only be a log message if there are TwinCAT libs with missing data types.');
+    if (service.skipMissingTypes === true) {
+        log('TAME library info: The "skipMissingTypes" parameter is set to true. TAME just drops a log message if there are TwinCAT libs with missing data types.');
     } else {
-        service.ignoreMissingTypes = false;
+        service.skipMissingTypes = false;
     }
     
     //======================================================================================
@@ -939,10 +939,15 @@ TAME.WebServiceClient = function (service) {
                 
                 if (async === true) {
                     //asynchronous request
-                    /*this.xmlHttpReq.timeout = 4000;
+                    
+                    /*
+                    //Test with timeout, seems like it doesn't work with all browsers (05/2017)
+                    this.xmlHttpReq.timeout = 4000;
                     this.xmlHttpReq.ontimeout = function(e) {
                         adsReq.reqDescr.oe();
-                    };*/
+                    };
+                    */
+
                     this.xmlHttpReq.onreadystatechange = function() {
                         if (adsReq.xmlHttpReq.readyState === 4) {
                             if (adsReq.xmlHttpReq.status === 200) {
@@ -3886,6 +3891,7 @@ TAME.WebServiceClient = function (service) {
             return;
         }
         
+        //Get the response
         try {
             response = adsReq.xmlHttpReq.responseXML.documentElement;
         } catch (e) {
@@ -3897,9 +3903,9 @@ TAME.WebServiceClient = function (service) {
             return;
         }
                
-        //Look for errors in the response string.
+        //Look for errors in the response string (i.e. ADS errors).
         try {
-            
+            //Get errors
             errorText = response.getElementsByTagName('faultstring')[0].firstChild.data;
             try {
                 errorCode = response.getElementsByTagName('errorcode')[0].firstChild.data;
@@ -3914,6 +3920,7 @@ TAME.WebServiceClient = function (service) {
             }
             return;
         } catch (ex) {
+            //All fine
             errorCode = 0;
         }
         
@@ -4634,7 +4641,7 @@ TAME.WebServiceClient = function (service) {
                                         }
                                         
                                         //Check added cause there are undefined data types some TwinCAT libs                                         
-                                        if (service.ignoreMissingTypes === true && dataTypeTable[dataTypeTable[name].subItems[sName].typeString] === undefined) {
+                                        if (service.skipMissingTypes === true && dataTypeTable[dataTypeTable[name].subItems[sName].typeString] === undefined) {
                                             log('TAME library error: Data type missing in TPY file:');
                                             log(dataTypeTable[name].subItems[sName]);
                                             log('TAME library warning: Access to symbols using this data type will return wrong results:');
@@ -4643,7 +4650,7 @@ TAME.WebServiceClient = function (service) {
                                         } else {
                                             if (dataTypeTable[dataTypeTable[name].subItems[sName].typeString] === undefined) {
                                                 log('TAME library error: Data type missing in TPY file!');
-                                                log('TAME library info: If you don\'t use this data type you can set the client parameter "ignoreMissingTypes" to true.');
+                                                log('TAME library info: If you don\'t use this data type you can set the client parameter "skipMissingTypes" to true.');
                                             }
                                             dataTypeTable[name].subItems[sName].bitSize = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].bitSize;
                                             dataTypeTable[name].subItems[sName].size = dataTypeTable[dataTypeTable[name].subItems[sName].typeString].size;
