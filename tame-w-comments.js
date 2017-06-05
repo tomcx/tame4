@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.1b 170528
+ * TAME [TwinCAT ADS Made Easy] V4.1 170605
  * 
  * Copyright (c) 2009-2017 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.1b 170528',
+    version:'V4.1 170605',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -262,6 +262,11 @@ TAME.WebServiceClient = function (service) {
         log('TAME library info: The "skipMissingTypes" parameter is set to true. TAME just drops a log message if there are TwinCAT libs with missing data types.');
     } else {
         service.skipMissingTypes = false;
+    }
+    
+    if (!isNaN(service.adsCheckInterval) && service.adsCheckInterval >= 1) {
+        log('TAME library info: Cyclic ADS state checks enabled. Interval time: ' + service.adsCheckInterval + ' ms.');
+        
     }
     
     //======================================================================================
@@ -940,21 +945,30 @@ TAME.WebServiceClient = function (service) {
                 if (async === true) {
                     //asynchronous request
                     
-                    /*
-                    //Test with timeout, seems like it doesn't work with all browsers (05/2017)
-                    this.xmlHttpReq.timeout = 4000;
+                    //Test with timeout
+                    //experimental, seems like it doesn't work with all browsers (05/2017)
+                    this.xmlHttpReq.timeout = 5000;
                     this.xmlHttpReq.ontimeout = function(e) {
-                        adsReq.reqDescr.oe();
+                        log('TAME library error: XMLHttpRequest timed out. Timeout 5 seconds.');
+                        log(e);
+                        if (typeof adsReq.reqDescr.ot === 'function') {
+                            //on timeout function
+                            adsReq.reqDescr.ot();
+                        }
                     };
-                    */
 
                     this.xmlHttpReq.onreadystatechange = function() {
                         if (adsReq.xmlHttpReq.readyState === 4) {
                             if (adsReq.xmlHttpReq.status === 200) {
+                                //request OK
                                 instance.parseResponse(adsReq);
-                            } else if (typeof adsReq.reqDescr.oe === 'function') {
-                                //on error function (experimental)
-                                adsReq.reqDescr.oe();
+                            } else {
+                                //request failed
+                                log('TAME library error: XMLHttpRequest returns an error. Status code : ' + adsReq.xmlHttpReq.status);
+                                if (typeof adsReq.reqDescr.oe === 'function') {
+                                    //on error function
+                                    adsReq.reqDescr.oe();
+                                }
                             }
                         }
                     };
@@ -2714,6 +2728,7 @@ TAME.WebServiceClient = function (service) {
             oc: args.oc,
             ocd: args.ocd,
             oe: args.oe,
+            ot: args.ot,
             readLength: len,
             debug: args.debug,
             sync: args.sync,
@@ -2892,6 +2907,7 @@ TAME.WebServiceClient = function (service) {
                 oc: args.oc,
                 ocd: args.ocd,
                 oe: args.oe,
+                ot: args.ot,
                 debug: args.debug,
                 readLength: structByteLen * arrayLength,
                 seq: true,
@@ -3047,6 +3063,7 @@ TAME.WebServiceClient = function (service) {
                 oc: args.oc,
                 ocd: args.ocd,
                 oe: args.oe,
+                ot: args.ot,
                 readLength: len * arrayLength,
                 debug: args.debug,
                 seq: true,
@@ -3143,6 +3160,7 @@ TAME.WebServiceClient = function (service) {
             oc: args.oc,
             ocd: args.ocd,
             oe: args.oe,
+            ot: args.ot,
             debug: args.debug,
             seq: true,
             calcAlignment: true,
@@ -3751,6 +3769,9 @@ TAME.WebServiceClient = function (service) {
      */
     this.readAdsState = function(reqDescr) {
         //Generate the ADS request object and call the send function.
+        instance.adsState = null;
+        instance.adsStateTxt = '';
+        instance.deviceState = null;
         var adsReq = {
             method: 'ReadState',
             reqDescr: reqDescr
@@ -3885,7 +3906,7 @@ TAME.WebServiceClient = function (service) {
             log('TAME library error: This is the "responseText":');
             log(adsReq.xmlHttpReq.responseText);
             if (typeof adsReq.reqDescr.oe === 'function') {
-                //on error function (experimental)
+                //on error function
                 adsReq.reqDescr.oe();
             }
             return;
@@ -3895,9 +3916,9 @@ TAME.WebServiceClient = function (service) {
         try {
             response = adsReq.xmlHttpReq.responseXML.documentElement;
         } catch (e) {
-            log('TAME library error: No XML data in server response:' + e);
+            log('TAME library error: No XML data in server response: ' + e);
             if (typeof adsReq.reqDescr.oe === 'function') {
-                //on error function (experimental)
+                //on error function
                 adsReq.reqDescr.oe();
             }
             return;
@@ -3915,7 +3936,7 @@ TAME.WebServiceClient = function (service) {
             log('TAME library error: Message from server:  ' + errorText + ' (' + errorCode + ')');
 
             if (typeof adsReq.reqDescr.oe === 'function') {
-                //on error function (experimental)
+                //on error function
                 adsReq.reqDescr.oe();
             }
             return;
@@ -4784,11 +4805,17 @@ TAME.WebServiceClient = function (service) {
      * Call the onReady function.
      */
     function onReady() {
-        if (typeof service.onReady == 'function') {
+        //On-ready-function
+        if (typeof service.onReady === 'function') {
             log('TAME library info: Calling the "onReady" function.');
             service.onReady();
         } else {
             log('TAME library error: No "onReady" function defined. Check the manual.');
+        }
+        //Start cyclic ADS checks if defined
+        if (!isNaN(service.adsCheckInterval) && service.adsCheckInterval >= 1) {
+            log('TAME library info: Start cyclic reading of ADS state.');
+            setInterval(instance.readAdsState, service.adsCheckInterval);   
         }
     }
     
