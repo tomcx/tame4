@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.1 170605
+ * TAME [TwinCAT ADS Made Easy] V4.1 170712
  * 
  * Copyright (c) 2009-2017 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.1 170605',
+    version:'V4.1 170712',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -264,6 +264,7 @@ TAME.WebServiceClient = function (service) {
         service.skipMissingTypes = false;
     }
     
+    //Cyclic ADS checks (experimental).
     if (!isNaN(service.adsCheckInterval) && service.adsCheckInterval >= 1) {
         log('TAME library info: Cyclic ADS state checks enabled. Interval time: ' + service.adsCheckInterval + ' ms.');
         
@@ -300,6 +301,9 @@ TAME.WebServiceClient = function (service) {
     this.symTableReady = false;
     this.dataTypeTableReady = false;
     this.handleCacheReady = false;
+    
+    //XMLHttpRequest timeout
+    this.xmlHttpReqTimeout = 5000;
 
     
         
@@ -947,9 +951,9 @@ TAME.WebServiceClient = function (service) {
                     
                     //Test with timeout
                     //experimental, seems like it doesn't work with all browsers (05/2017)
-                    this.xmlHttpReq.timeout = 5000;
+                    this.xmlHttpReq.timeout = instance.xmlHttpReqTimeout;
                     this.xmlHttpReq.ontimeout = function(e) {
-                        log('TAME library error: XMLHttpRequest timed out. Timeout 5 seconds.');
+                        log('TAME library error: XMLHttpRequest timed out. Timeout ' + instance.xmlHttpReqTimeout + ' milliseconds.');
                         log(e);
                         if (typeof adsReq.reqDescr.ot === 'function') {
                             //on timeout function
@@ -3759,9 +3763,8 @@ TAME.WebServiceClient = function (service) {
     };
     
     
-    
     /**
-     * This is the function for creating a sum read request.
+     * This is the function for reading the ADS state.
      * 
      * @param {Object}  reqDescr    The Request Descriptor. Besides other information
      *                              this object contains the allocation of PLC and
@@ -3769,15 +3772,35 @@ TAME.WebServiceClient = function (service) {
      */
     this.readAdsState = function(reqDescr) {
         //Generate the ADS request object and call the send function.
-        instance.adsState = null;
-        instance.adsStateTxt = '';
-        instance.deviceState = null;
+        
+        var oefunct;
+        
+        if (reqDescr === undefined) {
+            reqDescr = {};
+        } else if (typeof reqDescr.oe == 'function') {
+            //Save the original on-error function if exist.
+            oefunct = reqDescr.oe;
+        }
+                
+        //On-error-function, reset the state
+        reqDescr.oe = function () {
+            log('TAME library error: ADS state request failed.');
+            instance.adsState = null;
+            instance.adsStateTxt = '';
+            instance.deviceState = null;
+            
+            if (typeof oefunct == 'function') {
+                oefunct();
+            }
+        };
+        
         var adsReq = {
             method: 'ReadState',
             reqDescr: reqDescr
         };
         createRequest(adsReq).send();
     };
+    
 
     /**
      *  Prints the cached handles to the console.
@@ -4818,13 +4841,7 @@ TAME.WebServiceClient = function (service) {
             setInterval(instance.readAdsState, service.adsCheckInterval);   
         }
     }
-    
-    //----------------------------Test--------------------------------
-    //log('TAME library info: Reading the PLC state ...');
-    //instance.readAdsState({sync:true});
-    //log('TAME library info: Current PLC state: ' + instance.adsStateTxt);
-    //----------------------------Test--------------------------------
-    
+       
     
     /**
      * !!!!!INITIALIZATION OF THE SYMBOL TABLE!!!!!

@@ -5,11 +5,15 @@
   Usage is similar to the on-complete function. It fires on ADS-, XML- and
   network errors.
   
+- New feature: Timeout for XMLHttpRequest added. The default value is set to
+  5000 ms. You can change the value by overwriting the "xmlHttpReqTimeout"
+  property of the client.
+  
 - New feature: There are missing data types in some TwinCAT libraries. By 
   default TAME drops an error and stops importing the data types from the TPY
   file. With the new client parameter "skipMissingTypes" set to true it will 
   just drop a message an continue parsing the file.
-  
+
   
                       
                       
