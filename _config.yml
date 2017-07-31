@@ -1,0 +1,8 @@
+title: Tame4
+description: JS library for the access to a TwinCAT PLC.
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-architect
+
+gems:
+  - jekyll-mentions
