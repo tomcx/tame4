@@ -1,3 +1,10 @@
+                      TAME V4.1.2 Release Notes 
+                      -------------------------
+
+- Bugfix: 3 syntax errors fixed (commas deleted).
+
+
+
                       TAME V4.1.1 Release Notes 
                       -------------------------
 

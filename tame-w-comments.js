@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.1.1 170923
+ * TAME [TwinCAT ADS Made Easy] V4.1.2 171021
  * 
  * Copyright (c) 2009-2017 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -17,7 +17,7 @@
  */
 var TAME = {
     //Version
-    version:'V4.1.1 170923',
+    version:'V4.1.2 171021',
     //Names of days and months. This is for the formatted output of date values. You can
     //simply add your own values if you need.
     weekdShortNames: {
@@ -4272,7 +4272,7 @@ TAME.WebServiceClient = function (service) {
             indexGroup: indexGroups.UploadInfo,
             indexOffset: 0,
             reqDescr: {
-                readLength: 8,
+                readLength: 8
                 //sync: false
             }
         };
@@ -4306,7 +4306,7 @@ TAME.WebServiceClient = function (service) {
             indexGroup: indexGroups.Upload,
             indexOffset: 0,
             reqDescr: {
-                readLength: uploadLength,
+                readLength: uploadLength
                 //sync: false
             }
         };
@@ -4654,7 +4654,7 @@ TAME.WebServiceClient = function (service) {
                                         dataTypeTable[name].subItems[sName] = {
                                             typeString: subItemArray[j].getElementsByTagName('Type')[0].childNodes[0].nodeValue.toUpperCase(),
                                             pointer: subItemArray[j].getElementsByTagName('Type')[0].hasAttribute('Pointer'),
-                                            bitSize: parseInt(subItemArray[j].getElementsByTagName('BitSize')[0].childNodes[0].nodeValue, 10),
+                                            bitSize: parseInt(subItemArray[j].getElementsByTagName('BitSize')[0].childNodes[0].nodeValue, 10)
                                         };
                                         if (subItemArray[j].getElementsByTagName('BitOffs')[0] !== undefined) {
                                             dataTypeTable[name].subItems[sName].bitOffset = parseInt(subItemArray[j].getElementsByTagName('BitOffs')[0].childNodes[0].nodeValue, 10);
