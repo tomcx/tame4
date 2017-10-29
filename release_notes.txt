@@ -1,3 +1,14 @@
+                       TAME V4.2 Release Notes 
+                       -----------------------
+
+- New feature: Data type INT2DP added (INT in PLC, number with 2 decimal
+  points in JavaScript.
+
+- New feature: Code and files for using TAME as an NPM module added.
+
+
+
+
                       TAME V4.1.2 Release Notes 
                       -------------------------
 

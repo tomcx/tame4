@@ -1,0 +1,20 @@
+{
+  "name": "tame4",
+  "version": "4.2",
+  "description": "TAME 4: TwinCAT ADS Made Easy",
+  "main": "tame-w-comments.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomcx/tame4.git"
+  },
+  "keywords": ["ADS","Beckhoff","TwinCAT","PLC","TAME","TAME4"],
+  "author": "Thomas Schmidt <t.schmidt.p1@freenet.de>",
+  "license": "(MIT or GPL-3.0)",
+  "bugs": {
+    "url": "https://github.com/tomcx/tame4/issues"
+  },
+  "homepage": "http://tomcx.github.io/tame4/"
+}
