@@ -1,6 +1,6 @@
 TAME 4: TwinCAT ADS Made Easy
 =============================
-
+[![Build Status](https://travis-ci.org/tomcx/tame4.svg?branch=master)](https://travis-ci.org/tomcx/tame4)
 
 Introduction
 ------------
