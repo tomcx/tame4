@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.3 171030
+ * TAME [TwinCAT ADS Made Easy] V4.3.0 171030
  * 
  * Copyright (c) 2009-2017 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -22,7 +22,7 @@
      */
     var TAME = {
         //Version
-        version: 'V4.3 171030',
+        version: 'V4.3.0 171030',
         //Names of days and months. This is for the formatted output of date values. You can
         //simply add your own values if you need.
         weekdShortNames: {
