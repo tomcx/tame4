@@ -1,3 +1,21 @@
+                       TAME V4.3 Release Notes 
+                       -----------------------
+
+- Changed file names: For providing an NPM module I decided to rename the 
+  files to the common standart:
+
+    old                     new
+    -----------             --------------
+    tame-w-comments.js      tame.js
+    tame.js                 tame.min.js
+
+  So tame.js is now the readable version and tame.min.js is the minified one.
+
+- Bugfix: Minor errors fixed.
+
+
+
+  
                        TAME V4.2 Release Notes 
                        -----------------------
 
