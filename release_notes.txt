@@ -1,3 +1,13 @@
+                      TAME V4.3.1 Release Notes 
+                      -------------------------
+
+- Bugfix: Error with user defined data types in SumRequests fixed. Arrays
+  and structures were overwritten with the user defined type. Minor error
+  with data type STRING fixed.
+
+
+
+
                        TAME V4.3 Release Notes 
                        -----------------------
 
@@ -32,6 +42,7 @@
 
 - Bugfix: 3 syntax errors fixed (commas deleted, thanks to Jouzer for
   reporting).
+
 
 
 
