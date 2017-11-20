@@ -1,5 +1,5 @@
 /*!
- * TAME [TwinCAT ADS Made Easy] V4.3.0 171030
+ * TAME [TwinCAT ADS Made Easy] V4.3.1 171120
  * 
  * Copyright (c) 2009-2017 Thomas Schmidt; t.schmidt.p1 at freenet.de
  * 
@@ -22,7 +22,7 @@
      */
     var TAME = {
         //Version
-        version: 'V4.3.0 171030',
+        version: 'V4.3.1 171120',
         //Names of days and months. This is for the formatted output of date values. You can
         //simply add your own values if you need.
         weekdShortNames: {
@@ -668,10 +668,8 @@
 
                 //Get the type of the subitem
                 try {
-                    if (item.type === undefined) {
-                        itemInfo.type = dataTypeTable[dataType].subItems[typeArray[i]].type;
-                    }
 
+                    itemInfo.type = dataTypeTable[dataType].subItems[typeArray[i]].type;
                     itemInfo.arrayLength = dataTypeTable[dataType].subItems[typeArray[i]].arrayLength;
                     itemInfo.arrayDataType = dataTypeTable[dataType].subItems[typeArray[i]].arrayDataType;
                     itemInfo.dataType = dataTypeTable[dataType].subItems[typeArray[i]].dataType;
@@ -706,15 +704,12 @@
                     log(item);
                 }
 
-
             } else if (instance.symTableReady) {
                 //Try to get the type from the symbol table
                 if (typeof symTable[item.name] == 'object') {
                     try {
-                        if (item.type === undefined) {
-                            itemInfo.type = symTable[item.name].type;
-                        }
 
+                        itemInfo.type = symTable[item.name].type;
                         itemInfo.arrayLength = symTable[item.name].arrayLength;
                         itemInfo.arrayDataType = symTable[item.name].arrayDataType;
                         itemInfo.dataType = symTable[item.name].dataType;
@@ -759,29 +754,33 @@
 
             //Override type if defined by user
             if (typeof item.type == 'string') {
-                //Type is defined by user
+                //Type is defined by user, try to split it
                 arr = item.type.split('.');
-                itemInfo.type = arr[0];
                 if (arr.length > 2) {
                     //Join the formatting string if there were points in it.
                     arr[1] = arr.slice(1).join('.');
                 }
-
-                if (itemInfo.type === 'STRING') {
+                //Set the user defined type if it's not an array or structure
+                if (itemInfo.type !== 'ARRAY' && itemInfo.type !== 'USER') {
+                    itemInfo.type = arr[0];
+                }
+                //Type depending code
+                if (itemInfo.type === 'STRING' && arr[1] !== undefined) {
                     arr[1] = parseInt(arr[1], 10);
                     if (isValidStringLen(arr[1])) {
                         itemInfo.format = arr[1];
+                        itemInfo.stringLength = itemInfo.format;
+                        itemInfo.size = itemInfo.format++; //Termination
                     } else {
                         itemInfo.format = plcTypeLen.STRING;
                         log('TAME library warning: Length of string variable not defined: ' + item.name);
                         log('TAME library warning: A length of 80 characters (TwinCAT default) will be used.');
-                    }
-                    itemInfo.stringLength = itemInfo.format;
-                    itemInfo.size = itemInfo.format++; //Termination
+                    } 
                 } else if (itemInfo.type === 'ARRAY') {
+                    //Quick and dirty
+                    itemInfo.arrayDataType = arr[0];
+                    itemInfo.format = arr[1];
                     /*
-                    Maybe in a future version.
-                    
                     itemInfo.arrayLength = dataTypeTable[dataType].subItems[typeArray[i]].arrayLength;
                     itemInfo.arrayDataType = dataTypeTable[dataType].subItems[typeArray[i]].arrayDataType;
                     itemInfo.dataType = dataTypeTable[dataType].subItems[typeArray[i]].dataType;
@@ -795,7 +794,7 @@
                     itemInfo.format = arr[1];
                     itemInfo.size = plcTypeLen[itemInfo.type];
                 }
-
+                //Override format if extra information is given
                 if (typeof item.format === 'string') {
                     itemInfo.format = item.format;
                 } else if (typeof item.decPlaces === 'number') {
