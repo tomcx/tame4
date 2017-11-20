@@ -1,6 +1,6 @@
 {
   "name": "tame4",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "description": "TAME 4: TwinCAT ADS Made Easy",
   "main": "tame.js",
   "repository": {
